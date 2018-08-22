@@ -1,15 +1,20 @@
 #include <FastLED.h>
 
+
+
 FASTLED_USING_NAMESPACE
 
-// FastLED "100-lines-of-code" demo reel, showing just a few 
+// Based upon FastLED "100-lines-of-code" demo reel, showing just a few 
 // of the kinds of animation patterns you can quickly and easily 
 // compose using FastLED.  
 //
 // This example also shows one easy way to define multiple 
 // animations patterns and have them automatically rotate.
 //
-// -Mark Kriegsman, December 2014
+// original works by - Mark Kriegsman, December 2014
+// added 2nd output.
+// random direction for 2nd output
+// Kurt Schoenhoff - August 2018
 
 #if defined(FASTLED_VERSION) && (FASTLED_VERSION < 3001000)
 #warning "Requires FastLED 3.1 or later; check github for latest code."
@@ -28,7 +33,7 @@ CRGB leds2[NUM_LEDS2];
 #define BRIGHTNESS          254
 #define FRAMES_PER_SECOND  60
 
-//function prototypes
+//function prototypes (needed for platformio etc)
 void nextPattern();
 void rainbow();
 void rainbowWithGlitter();
@@ -48,12 +53,11 @@ void setup() {
   // tell FastLED about the LED strip configuration
   FastLED.addLeds<LED_TYPE,DATA_PIN1>(leds1, NUM_LEDS1).setCorrection(TypicalLEDStrip);
   FastLED.addLeds<LED_TYPE,DATA_PIN2>(leds2, NUM_LEDS2).setCorrection(TypicalLEDStrip);
-  //FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  //FastLED.addLeds<LED_TYPE,DATA_PIN,CLK_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
 
   // set master brightness control
   FastLED.setBrightness(BRIGHTNESS);
 
+  //intitalize stips to 0 (black)
   for(int i = 0; i < NUM_LEDS1; i++){
     leds1[i]= CRGB::Black;
   }
@@ -77,7 +81,6 @@ void loop()
   // Call the current pattern function once, updating the 'leds' array
   gPatterns[gCurrentPatternNumber]();
 
-
   // send the 'leds' array out to the actual LED strip
   FastLED.show();  
   // insert a delay to keep the framerate modest
@@ -94,7 +97,8 @@ void nextPattern()
 {
   // add one to the current pattern number, and wrap around at the end
   gCurrentPatternNumber = (gCurrentPatternNumber + 1) % ARRAY_SIZE( gPatterns);
-  
+
+  //sets an iverted flag for use when filling 2nd output
   if(random8(2)){
     invert = false;
   } else {
